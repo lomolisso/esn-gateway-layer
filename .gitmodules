@@ -1,0 +1,6 @@
+[submodule "esn-gateway-api"]
+	path = esn-gateway-api
+	url = https://github.com/lomolisso/esn-gateway-api
+[submodule "esn-gateway-microservices"]
+	path = esn-gateway-microservices
+	url = https://github.com/lomolisso/esn-gateway-microservices
