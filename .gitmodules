@@ -4,6 +4,3 @@
 [submodule "esn-gateway-microservices"]
 	path = esn-gateway-microservices
 	url = https://github.com/lomolisso/esn-gateway-microservices
-[submodule "esn-predictive-node"]
-	path = esn-predictive-node
-	url = git@github.com:lomolisso/esn-predictive-node.git
