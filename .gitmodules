@@ -4,3 +4,12 @@
 [submodule "esn-gateway-microservices"]
 	path = esn-gateway-microservices
 	url = https://github.com/lomolisso/esn-gateway-microservices
+[submodule "esn-gateway-edgex-foundry"]
+	path = esn-gateway-edgex-foundry
+	url = git@github.com:lomolisso/esn-gateway-edgex-foundry.git
+[submodule "esn-gateway-ble-prov-ms"]
+	path = esn-gateway-ble-prov-ms
+	url = git@github.com:lomolisso/esn-gateway-ble-prov-ms.git
+[submodule "esn-gateway-inference-ms"]
+	path = esn-gateway-inference-ms
+	url = git@github.com:lomolisso/esn-gateway-inference-ms.git
