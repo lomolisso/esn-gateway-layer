@@ -10,3 +10,6 @@
 [submodule "esn-gateway-mqtt-sensor-ms"]
 	path = esn-gateway-mqtt-sensor-ms
 	url = git@github.com:lomolisso/esn-gateway-mqtt-sensor-ms.git
+[submodule "esn-gateway-metadata-ms"]
+	path = esn-gateway-metadata-ms
+	url = git@github.com:lomolisso/esn-gateway-metadata-ms.git
