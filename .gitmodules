@@ -7,3 +7,6 @@
 [submodule "esn-gateway-inference-ms"]
 	path = esn-gateway-inference-ms
 	url = git@github.com:lomolisso/esn-gateway-inference-ms.git
+[submodule "esn-gateway-mqtt-sensor-ms"]
+	path = esn-gateway-mqtt-sensor-ms
+	url = git@github.com:lomolisso/esn-gateway-mqtt-sensor-ms.git
