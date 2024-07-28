@@ -1,9 +1,6 @@
 [submodule "esn-gateway-api"]
 	path = esn-gateway-api
 	url = https://github.com/lomolisso/esn-gateway-api
-[submodule "esn-gateway-edgex-foundry"]
-	path = esn-gateway-edgex-foundry
-	url = git@github.com:lomolisso/esn-gateway-edgex-foundry.git
 [submodule "esn-gateway-ble-prov-ms"]
 	path = esn-gateway-ble-prov-ms
 	url = git@github.com:lomolisso/esn-gateway-ble-prov-ms.git
