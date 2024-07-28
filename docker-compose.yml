@@ -1,0 +1,188 @@
+version: "3.8"
+name: esn-gateway-layer
+services:
+  # --- ESN Gateway Layer ---
+  api:
+    container_name: gateway-api
+    build:
+      context: ./esn-gateway-api
+    volumes:
+      - ./esn-gateway-api:/app
+    environment:
+      - SECRET_KEY=${GATEWAY_API_SECRET_KEY}
+      - GATEWAY_NAME=${GATEWAY_NAME}
+      - GATEWAY_API_HOST=${GATEWAY_API_HOST}
+      - GATEWAY_API_PORT=${GATEWAY_API_PORT}
+      - CLOUD_API_URL=${CLOUD_API_URL}/api/v1
+      - INFERENCE_MICROSERVICE_URL=http://${INFERENCE_MICROSERVICE_HOST}:${INFERENCE_MICROSERVICE_PORT}/api/v1
+      - BLE_PROV_MICROSERVICE_URL=http://${BLE_PROV_MICROSERVICE_HOST}:${BLE_PROV_MICROSERVICE_PORT}/api/v1
+      - MQTT_SENSOR_MICROSERVICE_URL=http://${MQTT_SENSOR_MICROSERVICE_HOST}:${MQTT_SENSOR_MICROSERVICE_PORT}/api/v1
+      - METADATA_MICROSERVICE_URL=http://${METADATA_MICROSERVICE_HOST}:${METADATA_MICROSERVICE_PORT}/api/v1
+      - LATENCY_BENCHMARK=${LATENCY_BENCHMARK}
+      - ADAPTIVE_INFERENCE=${ADAPTIVE_INFERENCE}
+    ports:
+      - "8004:8004"
+    restart: always
+    depends_on:
+      - inference-ms
+      - ble-prov-ms
+      - metadata-ms
+      - mqtt-sensor-ms
+    networks:
+      - esn-gateway-layer-network
+
+  inference-ms:
+    container_name: gateway-inference-ms
+    build:
+      context: ./esn-gateway-inference-ms
+      dockerfile: Dockerfile.app
+    volumes:
+      - ./esn-gateway-inference-ms:/app
+    environment:
+      - SECRET_KEY=${INFERENCE_MICROSERVICE_SECRET_KEY}
+      - INFERENCE_MICROSERVICE_HOST=${INFERENCE_MICROSERVICE_HOST}
+      - INFERENCE_MICROSERVICE_PORT=${INFERENCE_MICROSERVICE_PORT}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_DB_CELERY=${REDIS_DB_CELERY_INFERENCE_MICROSERVICE}
+      - REDIS_DB_HISTORY=${REDIS_DB_HISTORY_INFERENCE_MICROSERVICE}
+      - CELERY_NUM_WORKERS=${CELERY_NUM_WORKERS}
+      - CELERY_CONCURRENCY_LEVEL=${CELERY_CONCURRENCY_LEVEL}
+      - MAX_INFERENCE_QUEUE_SIZE=${MAX_INFERENCE_QUEUE_SIZE}
+      - MAX_PREDICTION_HISTORY_LENGTH=${MAX_PREDICTION_HISTORY_LENGTH}
+      - ABNORMAL_PREDICTION_THRESHOLD=${ABNORMAL_PREDICTION_THRESHOLD}
+      - ABNORMAL_LABELS=${ABNORMAL_LABELS}
+      - GATEWAY_API_URL=http://${GATEWAY_API_HOST}:${GATEWAY_API_PORT}/api/v1
+      - WORKER_INDEX=1
+    ports:
+      - "8005:8005"
+    depends_on:
+      - redis
+    networks:
+      - esn-gateway-layer-network
+  
+  inference-worker-1:
+    container_name: gateway-inference-worker-1
+    build:
+      context: ./esn-gateway-inference-ms
+      dockerfile: Dockerfile.worker
+    volumes:
+      - ./esn-gateway-inference-ms:/app
+    environment:
+      - SECRET_KEY=${INFERENCE_MICROSERVICE_SECRET_KEY}
+      - INFERENCE_MICROSERVICE_HOST=${INFERENCE_MICROSERVICE_HOST}
+      - INFERENCE_MICROSERVICE_PORT=${INFERENCE_MICROSERVICE_PORT}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_DB_CELERY=${REDIS_DB_CELERY_INFERENCE_MICROSERVICE}
+      - REDIS_DB_HISTORY=${REDIS_DB_HISTORY_INFERENCE_MICROSERVICE}
+      - CELERY_NUM_WORKERS=${CELERY_NUM_WORKERS}
+      - CELERY_CONCURRENCY_LEVEL=${CELERY_CONCURRENCY_LEVEL}
+      - MAX_INFERENCE_QUEUE_SIZE=${MAX_INFERENCE_QUEUE_SIZE}
+      - MAX_PREDICTION_HISTORY_LENGTH=${MAX_PREDICTION_HISTORY_LENGTH}
+      - ABNORMAL_PREDICTION_THRESHOLD=${ABNORMAL_PREDICTION_THRESHOLD}
+      - ABNORMAL_LABELS=${ABNORMAL_LABELS}
+      - GATEWAY_API_URL=http://${GATEWAY_API_HOST}:${GATEWAY_API_PORT}/api/v1
+      - WORKER_INDEX=1
+
+    depends_on:
+      - inference-ms
+      - redis
+    networks:
+      - esn-gateway-layer-network
+
+  ble-prov-ms:
+    container_name: gateway-ble-prov-ms
+    build:
+      context: ./esn-gateway-ble-prov-ms
+    volumes:
+      - ./esn-gateway-ble-prov-ms:/app
+    environment:
+      - SECRET_KEY=${BLE_PROV_MICROSERVICE_SECRET_KEY}
+      - BLE_PROV_MICROSERVICE_HOST=${BLE_PROV_MICROSERVICE_HOST}
+      - BLE_PROV_MICROSERVICE_PORT=${BLE_PROV_MICROSERVICE_PORT}
+      - EDGE_GATEWAY_BLE_IFACE=${EDGE_GATEWAY_BLE_IFACE}
+      - EDGE_GATEWAY_WIFI_SSID=${EDGE_GATEWAY_WIFI_SSID}
+      - EDGE_GATEWAY_WIFI_PASSPHRASE=${EDGE_GATEWAY_WIFI_PASSPHRASE}
+      - EDGE_SENSOR_SERVICE_NAME_PREFIX=${EDGE_SENSOR_SERVICE_NAME_PREFIX}
+      - EDGE_SENSOR_OUI=${EDGE_SENSOR_OUI}
+      - BLE_PROV_MAX_RETRIES=${BLE_PROV_MAX_RETRIES}
+    ports:
+      - "8006:8006"
+    restart: always
+    networks:
+      - esn-gateway-layer-network
+
+  metadata-ms:
+    container_name: gateway-metadata-ms
+    build:
+      context: ./esn-gateway-metadata-ms
+    volumes:
+      - ./esn-gateway-metadata-ms:/app
+    environment:
+      - SECRET_KEY=${METADATA_MICROSERVICE_SECRET_KEY}
+      - METADATA_MICROSERVICE_HOST=${METADATA_MICROSERVICE_HOST}
+      - METADATA_MICROSERVICE_PORT=${METADATA_MICROSERVICE_PORT}
+    ports:
+      - "8007:8007"
+    restart: always
+    networks:
+      - esn-gateway-layer-network
+
+  mqtt-sensor-ms:
+    container_name: gateway-mqtt-sensor-ms
+    build:
+      context: ./esn-gateway-mqtt-sensor-ms
+    volumes:
+      - ./esn-gateway-mqtt-sensor-ms:/app
+    environment:
+      - SECRET_KEY=${MQTT_SENSOR_MICROSERVICE_SECRET_KEY}
+      - MQTT_SENSOR_MICROSERVICE_HOST=${MQTT_SENSOR_MICROSERVICE_HOST}
+      - MQTT_SENSOR_MICROSERVICE_PORT=${MQTT_SENSOR_MICROSERVICE_PORT}
+      - LATENCY_BENCHMARK=${LATENCY_BENCHMARK}
+      - MQTT_BROKER_HOST=${MQTT_BROKER_HOST}
+      - MQTT_BROKER_PORT=${MQTT_BROKER_PORT}
+      - MQTT_PUBLISHER_CLIENT_ID=${MQTT_PUBLISHER_CLIENT_ID}
+      - MQTT_SUBSCRIBER_CLIENT_ID=${MQTT_SUBSCRIBER_CLIENT_ID}
+      - DEVICE_EXPORT_TOPIC=${DEVICE_EXPORT_TOPIC}
+      - DEVICE_RESPONSE_TOPIC=${DEVICE_RESPONSE_TOPIC}
+      - DEVICE_CMD_TOPIC_TEMPLATE=${DEVICE_CMD_TOPIC_TEMPLATE}
+      - GATEWAY_API_URL=http://${GATEWAY_API_HOST}:${GATEWAY_API_PORT}/api/v1
+      - GATEWAY_NAME=${GATEWAY_NAME}
+    ports:
+      - "8008:8008"
+    restart: always
+    depends_on:
+      - mosquitto
+    networks:
+      - esn-gateway-layer-network
+
+  mosquitto:
+      container_name: mosquitto
+      image: eclipse-mosquitto:latest
+      ports:
+        - "1883:1883" # MQTT protocol
+        - "9001:9001" # Websocket support, if needed
+      volumes:
+        - ./esn-gateway-mqtt-sensor-ms/mosquitto/config:/mosquitto/config
+        - ./esn-gateway-mqtt-sensor-ms/mosquitto/data:/mosquitto/data
+        - ./esn-gateway-mqtt-sensor-ms/mosquitto/log:/mosquitto/log
+      networks:
+        - esn-gateway-layer-network
+
+  redis:
+    container_name: gateway-redis
+    image: redis:7.0-alpine
+    command: redis-server --port 6381
+    expose:
+      - "6381"
+    ports:
+      - "6381:6381"
+    restart: always
+    networks:
+      - esn-gateway-layer-network
+
+networks:
+  esn-gateway-layer-network:
+    name: esn-gateway-layer-network
+    driver: bridge
