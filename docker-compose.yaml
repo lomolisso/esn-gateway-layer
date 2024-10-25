@@ -25,7 +25,6 @@ services:
     restart: always
     depends_on:
       - inference-ms
-      - ble-prov-ms
       - metadata-ms
       - mqtt-sensor-ms
     networks:
@@ -62,7 +61,7 @@ services:
       - redis
     networks:
       - esn-gateway-layer-network
-  
+
   inference-worker-1:
     container_name: gateway-inference-worker-1
     build:
@@ -91,28 +90,6 @@ services:
     depends_on:
       - inference-ms
       - redis
-    networks:
-      - esn-gateway-layer-network
-
-  ble-prov-ms:
-    container_name: gateway-ble-prov-ms
-    build:
-      context: ./esn-gateway-ble-prov-ms
-    volumes:
-      - ./esn-gateway-ble-prov-ms:/app
-    environment:
-      - SECRET_KEY=${BLE_PROV_MICROSERVICE_SECRET_KEY}
-      - BLE_PROV_MICROSERVICE_HOST=${BLE_PROV_MICROSERVICE_HOST}
-      - BLE_PROV_MICROSERVICE_PORT=${BLE_PROV_MICROSERVICE_PORT}
-      - EDGE_GATEWAY_BLE_IFACE=${EDGE_GATEWAY_BLE_IFACE}
-      - EDGE_GATEWAY_WIFI_SSID=${EDGE_GATEWAY_WIFI_SSID}
-      - EDGE_GATEWAY_WIFI_PASSPHRASE=${EDGE_GATEWAY_WIFI_PASSPHRASE}
-      - EDGE_SENSOR_SERVICE_NAME_PREFIX=${EDGE_SENSOR_SERVICE_NAME_PREFIX}
-      - EDGE_SENSOR_OUI=${EDGE_SENSOR_OUI}
-      - BLE_PROV_MAX_RETRIES=${BLE_PROV_MAX_RETRIES}
-    ports:
-      - "8006:8006"
-    restart: always
     networks:
       - esn-gateway-layer-network
 
@@ -161,17 +138,17 @@ services:
       - esn-gateway-layer-network
 
   mosquitto:
-      container_name: mosquitto
-      image: eclipse-mosquitto:latest
-      ports:
-        - "1883:1883" # MQTT protocol
-        - "9001:9001" # Websocket support, if needed
-      volumes:
-        - ./esn-gateway-mqtt-sensor-ms/mosquitto/config:/mosquitto/config
-        - ./esn-gateway-mqtt-sensor-ms/mosquitto/data:/mosquitto/data
-        - ./esn-gateway-mqtt-sensor-ms/mosquitto/log:/mosquitto/log
-      networks:
-        - esn-gateway-layer-network
+    container_name: mosquitto
+    image: eclipse-mosquitto:latest
+    ports:
+      - "1883:1883" # MQTT protocol
+      - "9001:9001" # Websocket support, if needed
+    volumes:
+      - ./esn-gateway-mqtt-sensor-ms/mosquitto/config:/mosquitto/config
+      - ./esn-gateway-mqtt-sensor-ms/mosquitto/data:/mosquitto/data
+      - ./esn-gateway-mqtt-sensor-ms/mosquitto/log:/mosquitto/log
+    networks:
+      - esn-gateway-layer-network
 
   redis:
     container_name: gateway-redis
@@ -184,6 +161,34 @@ services:
     restart: always
     networks:
       - esn-gateway-layer-network
+
+#  TODO: dockerize ble prov microservice
+#  currently struggling with enabling the container to access the host's bluetooth interface.
+#
+#  ble-prov-ms:
+#    container_name: gateway-ble-prov-ms
+#    build:
+#      context: ./esn-gateway-ble-prov-ms
+#    volumes:
+#      - ./esn-gateway-ble-prov-ms:/app
+#    environment:
+#      - SECRET_KEY=${BLE_PROV_MICROSERVICE_SECRET_KEY}
+#      - BLE_PROV_MICROSERVICE_HOST=${BLE_PROV_MICROSERVICE_HOST}
+#      - BLE_PROV_MICROSERVICE_PORT=${BLE_PROV_MICROSERVICE_PORT}
+#      - EDGE_GATEWAY_BLE_IFACE=${EDGE_GATEWAY_BLE_IFACE}
+#      - EDGE_GATEWAY_WIFI_SSID=${EDGE_GATEWAY_WIFI_SSID}
+#      - EDGE_GATEWAY_WIFI_PASSPHRASE=${EDGE_GATEWAY_WIFI_PASSPHRASE}
+#      - EDGE_SENSOR_SERVICE_NAME_PREFIX=${EDGE_SENSOR_SERVICE_NAME_PREFIX}
+#      - EDGE_SENSOR_OUI=${EDGE_SENSOR_OUI}
+#      - BLE_PROV_MAX_RETRIES=${BLE_PROV_MAX_RETRIES}
+#    ports:
+#      - "8006:8006"
+#    restart: always
+#    networks:
+#      - esn-gateway-layer-network
+#      
+
+
 
 networks:
   esn-gateway-layer-network:
